@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Scrollama: Map Storytelling</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<script src="https://unpkg.com/d3@5.9.1/dist/d3.min.js"></script>
+<script src="https://unpkg.com/scrollama"></script>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: lightblue;
+    color: #333;
+}
+
+#scrolly {
+    position: relative;
+    display: flex;
+    background-color: #8dccdf;
+    padding: 1rem;
+}
+
+article {
+    position: relative;
+    padding: 0 1rem;
+    width: 35%;
+    max-width: 30rem;
+}
+
+figure {
+    position: -webkit-sticky;
+    position: sticky;
+    width: 65%;
+    height: 80vh;
+    margin: 0;
+    top: 10vh;
+    background-color: #ceb77b;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.step {
+    margin: 0 auto 2rem auto;
+    background-color:#dfa08d;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    padding: 2rem;
+    opacity: 0.2;
+    transition: all 0.5s;
+}
+
+.step.is-active {
+    opacity: 1;
+    border-left: 5px solid #8d639c;
+}
+
+.step h2 {
+    margin-top: 0;
+    color: #8d639c;
+}
+
+.intro, .outro {
+    text-align: center;
+    padding: 15vh 10vw;
+}
+.header {
+    text-align: center;
+    padding: 5vh 10vw;
+    background-color: #8dccdf;
+}
+
+.header h1 {
+    margin: 20px 0 10px 0;
+    font-size: 2.5rem;
+}
+
+.names {
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.header-img {
+    width: 120px;
+    height: auto;
+}
+</style>
+</head>
+
+<body>
+<main>
+<section class="header">
+  <img src="https://lindsaypolaski.github.io/GES3050G3FINAL/download.png" alt="Logo" class="header-img">
+
+  <h1>Mountain Lion Risk & Urban Expansion in Colorado</h1>
+
+  <p class="names">
+    Lindsay Polaski | Justin | Murphy
+  </p>
+</section>
+
+<section id="scrolly">
+<article>
+
+<div class="step" data-src="https://lindsaypolaski.github.io/GES3050G3FINAL/2006-2016 Data.html">
+<h2>2006-2016 Data</h2>
+<p> Between 2006 and 2016, mountain lion danger zones across Colorado were mapped alongside early urban development patterns and established mountain lion corridors. The data shows that danger zones were scattered throughout the state but formed noticeable clusters near the Fort Collins region, the west Denver Region, and the west Colorado Springs region, with southern clusters near the Mesa Verde area. These patterns are largely driven by the overlap between expanding human development and natural mountain lion habitat along the foothills and protected landscapes.  </p>
+</div>
+
+<div class="step" data-src="https://lindsaypolaski.github.io/GES3050G3FINAL/2016-2026 Data.html">
+<h2>2016- 2026 Data</h2>
+<p> The Basemap of Mountain Lion attacks from 2017-2026 show an increase in Urban development.
+This encroachment has affected Mountain Lion to force beyond their territory.
+This has led to an increase in Mountain lion attacks to what we see even today. </p>
+</div>
+
+<div class="step" data-src="https://lindsaypolaski.github.io/GES3050G3FINAL/future2.O.html">
+<h2>Future Predicitions</h2>
+<p>Here we have three sections of data to help shed light on the future of mountain lions, humans, and their interactions. 
+"
+"Hunting" looks into the amount of mountain lion hunters active in Colorado from 2019 to 2025 and the amount of mountain lions they hunted. This data also details how many of the hunted animals were male vs female.
+
+"Attacks" details the reported mountain lion attacks in Colorado. This shows the number of attacks each year and categorizes them as attacks on humans or on pets. 
+
+"Human Population" shows the population growth of humans in Colorado from 2010 to 2024 using U.S. Census data. This provides context for how the growing population of humans can encroach on and impact the habitats of mountain lions here in Colorado. </p>
+</div>
+
+
+</article>
+
+<figure>
+<iframe id="map-frame" src="https://kartenzzeichnen.github.io/California/ConnorPage.html"></iframe>
+</figure>
+</section>
+
+
+
+</main>
+
+<script>
+// Use D3 to select elements
+var main = d3.select("main");
+var scrolly = main.select("#scrolly");
+var figure = scrolly.select("figure");
+var article = scrolly.select("article");
+var step = article.selectAll(".step");
+var mapFrame = d3.select("#map-frame");
+
+// Initialize scrollama
+var scroller = scrollama();
+
+// Resize function
+function handleResize() {
+    var stepH = Math.floor(window.innerHeight * 0.8);
+    step.style("height", stepH + "px");
+
+    var figureHeight = window.innerHeight * 0.8;
+    var figureMarginTop = (window.innerHeight - figureHeight) / 2;
+
+    figure
+        .style("height", figureHeight + "px")
+        .style("top", figureMarginTop + "px");
+
+    scroller.resize();
+}
+
+// Scroll event
+function handleStepEnter(response) {
+    step.classed("is-active", function(d, i) {
+        return i === response.index;
+    });
+
+    var src = response.element.getAttribute("data-src");
+    mapFrame.attr("src", src);
+}
+
+// Setup scrollama
+function init() {
+    handleResize();
+
+    scroller
+        .setup({
+            step: ".step",
+            offset: 0.5,
+            debug: false
+        })
+        .onStepEnter(handleStepEnter);
+
+    window.addEventListener("resize", handleResize);
+}
+
+// Start
+init();
+</script>
+
+</body>
+</html>
