@@ -1,0 +1,201 @@
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Mountain Lion Attacks Heatmap</title>
+
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.js"></script>
+
+<style>
+body { margin: 0; padding: 0; }
+
+#map {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+}
+
+.title {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(255,255,255,0.9);
+    padding: 10px;
+    font-family: sans-serif;
+    font-weight: bold;
+    border-radius: 6px;
+    z-index: 1;
+}
+
+.legend {
+    position: absolute;
+    bottom: 30px;
+    left: 10px;
+    background: white;
+    padding: 10px;
+    font-family: sans-serif;
+    font-size: 12px;
+    border-radius: 6px;
+    z-index: 1;
+}
+
+.legend-gradient {
+    width: 180px;
+    height: 10px;
+    background: linear-gradient(to right,
+        rgba(247,251,255,0),
+        #c6dbef,
+        #6baed6,
+        #2171b5,
+        #08306b
+    );
+}
+</style>
+</head>
+
+<body>
+
+<div id="map"></div>
+
+<div class="title">
+    Mountain Lion Attacks (2017–2026)
+</div>
+
+<div class="legend">
+    <b>Attack Intensity</b>
+    <div class="legend-gradient"></div>
+    <div style="display:flex;justify-content:space-between;">
+        <span>Low</span><span>High</span>
+    </div>
+</div>
+
+<script>
+
+mapboxgl.accessToken = 'pk.eyJ1IjoiYmxhemU3MTUiLCJhIjoiY21ua3BnYmh0MHNvdTJycHZrNGxpYWoxbiJ9.herf5qJSWX7XWcrQKeAuYQ';
+
+const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/blaze715/cmom3was7002w01ss2gd27wuu',
+    center: [-105.312, 38.812],
+    zoom: 6.45
+});
+
+map.on('load', function () {
+
+    map.addSource('attacks', {
+        type: 'vector',
+        url: 'mapbox://blaze715.21tilcya'
+    });
+
+    const layer = 'MTNLN_ATK_2026-4tc61b';
+
+    // HEATMAP
+    map.addLayer({
+        id: 'attacks-heat',
+        type: 'heatmap',
+        source: 'attacks',
+        'source-layer': layer,
+        paint: {
+            'heatmap-weight': [
+                'interpolate',
+                ['linear'],
+                ['get', 'n_all'],
+                0, 0,
+                50, 0.5,
+                200, 1,
+                725, 1
+            ],
+            'heatmap-radius': 35,
+            'heatmap-intensity': 1,
+            'heatmap-opacity': 0.75,
+            'heatmap-color': [
+                'interpolate',
+                ['linear'],
+                ['heatmap-density'],
+                0, 'rgba(247,251,255,0)',
+                0.2, '#c6dbef',
+                0.4, '#6baed6',
+                0.6, '#2171b5',
+                1, '#08306b'
+            ]
+        }
+    });
+
+    // CLICK LAYER
+    map.addLayer({
+        id: 'attacks-points',
+        type: 'circle',
+        source: 'attacks',
+        'source-layer': layer,
+        paint: {
+            'circle-radius': 10,
+            'circle-color': '#ff0000',
+            'circle-opacity': 0
+        }
+    });
+
+    // FIXED FACTS ARRAY
+    const facts = [
+        "Mountain lions are most active during dawn and dusk.",
+        "They can travel over 20 miles in a night.",
+        "They rely on ambush hunting rather than long chases.",
+        "They are solitary and highly territorial.",
+        "There have only been a few fatal encounters in Colorado (so far).",
+        "Mountain lions can jump up to 40–45 feet horizontally in a single leap.",
+        "They can sprint at speeds of 40–50 mph (64–80 km/h).",
+        "A single mountain lion can control a territory of 50–150+ square miles.",
+        "Most attacks involve juvenile mountain lions (1–2.5 years old).",
+        "Despite their size, they are extremely stealthy and are often called “ghost cats”.",
+        "Colorado has one of the largest mountain lion populations in the U.S.",
+        "Colorado allows regulated hunting of mountain lions each year."
+    ];
+
+    // POPUP
+    map.on('click', 'attacks-points', function (e) {
+
+        if (!e.features.length) return;
+
+        const f = e.features[0];
+
+        const date = f.properties?.DATE || "Unknown";
+        const rawType = f.properties?.TYPE || "Unknown";
+
+        const typeMap = {
+            "F": "Fatal",
+            "NF": "Non-Fatal",
+            "H": "Human Injury",
+            "P": "Pet/Livestock"
+        };
+
+        const type = typeMap[rawType] || rawType;
+
+        const randomFact = facts[Math.floor(Math.random() * facts.length)];
+
+        new mapboxgl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML(`
+                <b>Mountain Lion Attack</b><br><br>
+                📅 Date: ${date}<br>
+                ⚠️ Type: ${type}<br><br>
+                🧠 Fact: ${randomFact}
+            `)
+            .addTo(map);
+    });
+
+    map.on('mouseenter', 'attacks-points', () => {
+        map.getCanvas().style.cursor = 'pointer';
+    });
+
+    map.on('mouseleave', 'attacks-points', () => {
+        map.getCanvas().style.cursor = '';
+    });
+
+});
+
+</script>
+
+</body>
+</html>
